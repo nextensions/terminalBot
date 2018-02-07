@@ -7,7 +7,7 @@ import 'moment-timezone'
 require('moment/locale/th')
 
 dotenv.load()
-const { TITLE, LINETOKEN, PG_CONNECTION_STRING } = process.env
+const { LINETOKEN, PG_CONNECTION_STRING } = process.env
 const connectionString = PG_CONNECTION_STRING
 
 const pool = new Pool({
@@ -79,6 +79,26 @@ pool.connect().then(client =>
           }
         })
         console.log(message)
+        const stickerPkg = 2
+        const stickerId = 22
+        request(
+          {
+            method: 'POST',
+            uri: 'https://notify-api.line.me/api/notify',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            auth: { bearer: LINETOKEN },
+            form: {
+              stickerPackageId: stickerPkg,
+              stickerId,
+              message: `\n${message.join('\n')}`,
+            },
+          },
+          (err, httpResponse, body) => {
+            console.log(JSON.stringify(err))
+            console.log(JSON.stringify(httpResponse))
+            console.log(JSON.stringify(body))
+          },
+        )
         client.release()
       })
     })
