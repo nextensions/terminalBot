@@ -11,7 +11,7 @@ COPY /.babelrc /nodejs/.babelrc
 RUN mkdir /nodejs/src
 COPY /src/notify.js /nodejs/src/notify.js
 WORKDIR /nodejs
-RUN npm install
+RUN npm install dotenv moment moment-timezone pg request --save
 RUN npm install babel-preset-node5 babel-register eslint eslint-plugin-import --save-dev
 
 ENTRYPOINT ["node","index.js"]
