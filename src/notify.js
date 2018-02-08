@@ -7,9 +7,12 @@ import 'moment-timezone'
 require('moment/locale/th')
 
 dotenv.load()
-const { LINETOKEN, PG_CONNECTION_STRING } = process.env
-const connectionString = PG_CONNECTION_STRING
+const {
+  LINETOKEN, DB_HOST, DB_USER, DB_PASS, DB_NAME, PG_CONNECTION_STRING,
+} = process.env
 
+// const connectionString = `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:5432/${DB_NAME}`
+const connectionString = PG_CONNECTION_STRING
 const pool = new Pool({
   connectionString,
 })
