@@ -1,0 +1,17 @@
+version: "3.2"
+
+services:
+  app:
+    image: terminalbot:latest
+    environment:
+      NODE_ENV: "production"
+      PG_CONNECTION_STRING: "/run/secrets/PG_CONNECTION_STRING"
+      LINETOKEN: "/run/secrets/LINETOKEN"
+    secrets:
+      - PG_CONNECTION_STRING
+      - LINETOKEN
+secrets:
+    PG_CONNECTION_STRING:
+        external: true
+    LINETOKEN:
+        external: true

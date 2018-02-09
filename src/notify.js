@@ -1,17 +1,39 @@
 import request from 'request'
 import dotenv from 'dotenv'
 import moment from 'moment'
+import fs from 'fs'
+import path from 'path'
 import { Pool, Client } from 'pg'
 import 'moment-timezone'
 
 require('moment/locale/th')
 
 dotenv.load()
-const {
-  LINETOKEN, DB_HOST, DB_USER, DB_PASS, DB_NAME, PG_CONNECTION_STRING,
-} = process.env
+const { NODE_ENV } = process.env
 
-// const connectionString = `postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:5432/${DB_NAME}`
+const SECRETS_DIR = '/run/secrets'
+const output = {}
+
+if (NODE_ENV === 'production') {
+  if (fs.existsSync(SECRETS_DIR)) {
+    const files = fs.readdirSync(SECRETS_DIR)
+
+    files.forEach((file, index) => {
+      const fullPath = path.join(SECRETS_DIR, file)
+      const key = file
+      const data = fs
+        .readFileSync(fullPath, 'utf8')
+        .toString()
+        .trim()
+
+      output[key] = data
+    })
+  }
+}
+
+const PG_CONNECTION_STRING = (NODE_ENV === 'production') ? output.PG_CONNECTION_STRING : process.env.PG_CONNECTION_STRING
+const LINETOKEN = (NODE_ENV === 'production') ? output.LINETOKEN : process.env.LINETOKEN
+
 const connectionString = PG_CONNECTION_STRING
 const pool = new Pool({
   connectionString,
@@ -84,24 +106,27 @@ pool.connect().then(client =>
         console.log(message)
         const stickerPkg = 2
         const stickerId = 22
-        request(
-          {
-            method: 'POST',
-            uri: 'https://notify-api.line.me/api/notify',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            auth: { bearer: LINETOKEN },
-            form: {
-              stickerPackageId: stickerPkg,
-              stickerId,
-              message: `\n${message.join('\n')}`,
+        if (message.length) {
+          request(
+            {
+              method: 'POST',
+              uri: 'https://notify-api.line.me/api/notify',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              auth: { bearer: LINETOKEN },
+              form: {
+                stickerPackageId: stickerPkg,
+                stickerId,
+                message: `\n${message.join('\n')}`,
+              },
             },
-          },
-          (err, httpResponse, body) => {
-            console.log(JSON.stringify(err))
-            console.log(JSON.stringify(httpResponse))
-            console.log(JSON.stringify(body))
-          },
-        )
+            (err, httpResponse, body) => {
+              console.log(JSON.stringify(err))
+              console.log(JSON.stringify(httpResponse))
+              console.log(JSON.stringify(body))
+            },
+          )
+        }
+
         client.release()
       })
     })

@@ -12,8 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^5.0.0",
+    "fs": "^0.0.1-security",
     "moment": "^2.20.1",
     "moment-timezone": "^0.5.14",
+    "path": "^0.12.7",
     "pg": "^7.4.1",
     "request": "^2.83.0"
   },
