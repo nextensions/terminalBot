@@ -5,6 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import { Pool, Client } from 'pg'
 import 'moment-timezone'
+import schedule from 'node-schedule'
 
 require('moment/locale/th')
 
@@ -31,8 +32,8 @@ if (NODE_ENV === 'production') {
   }
 }
 
-const PG_CONNECTION_STRING = (NODE_ENV === 'production') ? output.PG_CONNECTION_STRING : process.env.PG_CONNECTION_STRING
-const LINETOKEN = (NODE_ENV === 'production') ? output.LINETOKEN : process.env.LINETOKEN
+const PG_CONNECTION_STRING = NODE_ENV === 'production' ? output.PG_CONNECTION_STRING : process.env.PG_CONNECTION_STRING
+const LINETOKEN = NODE_ENV === 'production' ? output.LINETOKEN : process.env.LINETOKEN
 
 const connectionString = PG_CONNECTION_STRING
 const pool = new Pool({
@@ -64,8 +65,7 @@ const query = {
   values: [10],
 }
 
-const message = []
-pool.connect().then(client =>
+const terminalChecker = message => pool.connect().then(client =>
   client
     .query(query)
     .then((res) => {
@@ -134,3 +134,17 @@ pool.connect().then(client =>
       client.release()
       console.log(e.stack)
     }))
+
+const peakTime = '0 */5 * 6-7,14-15 * 1-5'
+const notmalTime = '0 0 * * * *'
+
+
+const terminalBotNormal = schedule.scheduleJob(notmalTime, () => {
+  const message = []
+  terminalChecker(message)
+})
+
+const terminalBotPeak = schedule.scheduleJob(peakTime, () => {
+  const message = []
+  terminalChecker(message)
+})
