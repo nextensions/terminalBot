@@ -136,7 +136,7 @@ const terminalChecker = message => pool.connect().then(client =>
     }))
 
 const peakTime = '0 */5 * 6-7,14-15 * 1-5'
-const notmalTime = '0 0 * * * *'
+const notmalTime = '0 0 * 5-19 * 1-5'
 
 
 const terminalBotNormal = schedule.scheduleJob(notmalTime, () => {
