@@ -136,10 +136,10 @@ const terminalChecker = message =>
         console.log(e.stack)
       }))
 
-const peakTime = '0 */15 * 6-7,14-15 * 1-5'
-const notmalTime = '0 0 * 5-19 * 1-5'
+const peakTime = '0 */15 6,7,14,15 * * 1-5'
+const normalTime = '0 0 * 5-19 * 1-5'
 
-// const terminalBotNormal = schedule.scheduleJob(notmalTime, () => {
+// const terminalBotNormal = schedule.scheduleJob(normalTime, () => {
 //   const message = []
 //   terminalChecker(message)
 // })
