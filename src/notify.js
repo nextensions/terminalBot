@@ -65,14 +65,15 @@ const query = {
   values: [10],
 }
 
-const terminalChecker = message => pool.connect().then(client =>
-  client
-    .query(query)
-    .then((res) => {
-      const lastSend = res.rows.map(terminal =>
-        client
-          .query({
-            text: `SELECT
+const terminalChecker = message =>
+  pool.connect().then(client =>
+    client
+      .query(query)
+      .then((res) => {
+        const lastSend = res.rows.map(terminal =>
+          client
+            .query({
+              text: `SELECT
                         MAX(created_at) AS created_at,
                         terminal_id,
                         $2 AS school
@@ -81,68 +82,67 @@ const terminalChecker = message => pool.connect().then(client =>
                         UNION
                         (SELECT created_at, terminal_id FROM clock_in WHERE terminal_id = $1 ORDER BY id DESC LIMIT 1)
                     ) AS result GROUP BY terminal_id`,
-            values: [terminal.tid, terminal.name],
-          })
-          .then(promise => promise)
-          .catch((e) => {
-            console.log(e.stack)
-          }))
-      return lastSend
-    })
-    .then((promise) => {
-      Promise.all(promise).then((results) => {
-        const msg = results.map((log) => {
-          const pass5MinTime = moment()
-            .subtract(5, 'minute')
-            .tz('Asia/Bangkok')
-          const lastSendTime = moment(log.rows[0].created_at).tz('Asia/Bangkok')
-          const terminalId = log.rows[0].terminal_id
-          const schoolName = log.rows[0].school
-
-          if (lastSendTime && lastSendTime < pass5MinTime) {
-            message.push(`${schoolName} terminal เบอร์ ${terminalId} เครื่องแดง, ใช้งานได้ล่าสุดเมื่อ ${lastSendTime.format('Do MMMM YYYY เวลา H:mm:ss')}`)
-          }
-        })
-        console.log(message)
-        const stickerPkg = 2
-        const stickerId = 22
-        if (message.length) {
-          request(
-            {
-              method: 'POST',
-              uri: 'https://notify-api.line.me/api/notify',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              auth: { bearer: LINETOKEN },
-              form: {
-                stickerPackageId: stickerPkg,
-                stickerId,
-                message: `\n${message.join('\n')}`,
-              },
-            },
-            (err, httpResponse, body) => {
-              console.log(JSON.stringify(err))
-              console.log(JSON.stringify(httpResponse))
-              console.log(JSON.stringify(body))
-            },
-          )
-        }
-
-        client.release()
+              values: [terminal.tid, terminal.name],
+            })
+            .then(promise => promise)
+            .catch((e) => {
+              console.log(e.stack)
+            }))
+        return lastSend
       })
-    })
-    .catch((e) => {
-      client.release()
-      console.log(e.stack)
-    }))
+      .then((promise) => {
+        Promise.all(promise).then((results) => {
+          const msg = results.map((log) => {
+            const pass5MinTime = moment()
+              .subtract(5, 'minute')
+              .tz('Asia/Bangkok')
+            const lastSendTime = moment(log.rows[0].created_at).tz('Asia/Bangkok')
+            const terminalId = log.rows[0].terminal_id
+            const schoolName = log.rows[0].school
 
-const peakTime = '0 */5 * 6-7,14-15 * 1-5'
+            if (lastSendTime && lastSendTime < pass5MinTime) {
+              message.push(`${schoolName} terminal เบอร์ ${terminalId} เครื่องแดง, ใช้งานได้ล่าสุดเมื่อ ${lastSendTime.format('Do MMMM YYYY เวลา H:mm:ss')}`)
+            }
+          })
+          console.log(message)
+          const stickerPkg = 2
+          const stickerId = 22
+          if (message.length) {
+            request(
+              {
+                method: 'POST',
+                uri: 'https://notify-api.line.me/api/notify',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                auth: { bearer: LINETOKEN },
+                form: {
+                  stickerPackageId: stickerPkg,
+                  stickerId,
+                  message: `\n${message.join('\n')}`,
+                },
+              },
+              (err, httpResponse, body) => {
+                console.log(JSON.stringify(err))
+                console.log(JSON.stringify(httpResponse))
+                console.log(JSON.stringify(body))
+              },
+            )
+          }
+
+          client.release()
+        })
+      })
+      .catch((e) => {
+        client.release()
+        console.log(e.stack)
+      }))
+
+const peakTime = '0 */15 * 6-7,14-15 * 1-5'
 const notmalTime = '0 0 * 5-19 * 1-5'
 
-
-const terminalBotNormal = schedule.scheduleJob(notmalTime, () => {
-  const message = []
-  terminalChecker(message)
-})
+// const terminalBotNormal = schedule.scheduleJob(notmalTime, () => {
+//   const message = []
+//   terminalChecker(message)
+// })
 
 const terminalBotPeak = schedule.scheduleJob(peakTime, () => {
   const message = []
