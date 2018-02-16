@@ -137,12 +137,12 @@ const terminalChecker = message =>
       }))
 
 const peakTime = '0 */5 6,7,14,15 * * 1-5'
-const normalTime = '0 0 * 5-19 * 1-5'
+const normalTime = '0 0 5-18 * * 1-5'
 
-// const terminalBotNormal = schedule.scheduleJob(normalTime, () => {
-//   const message = []
-//   terminalChecker(message)
-// })
+const terminalBotNormal = schedule.scheduleJob(normalTime, () => {
+  const message = []
+  terminalChecker(message)
+})
 
 const terminalBotPeak = schedule.scheduleJob(peakTime, () => {
   const message = []
