@@ -101,7 +101,7 @@ const terminalChecker = message =>
             const schoolName = log.rows[0].school
 
             if (lastSendTime && lastSendTime < pass5MinTime) {
-              message.push(`${schoolName} terminal เบอร์ ${terminalId} เครื่องแดง, ใช้งานได้ล่าสุดเมื่อ ${lastSendTime.format('Do MMMM YYYY เวลา H:mm:ss')}`)
+              message.push(`${schoolName} terminal เบอร์ ${terminalId} เครื่องเสีย, ใช้งานได้ล่าสุดเมื่อ ${lastSendTime.format('Do MMMM YYYY เวลา H:mm:ss')}`)
             }
           })
           console.log(message)
